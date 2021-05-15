@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+import requests
+import json
+import datetime
+import shutil
+import sys
+
+# Global variables
+version_url = "https://launchermeta.mojang.com/mc/game/version_manifest.json" 
+download_url = "https://launcher.mojang.com/v1/objects/1b557e7b033b583cd9f66746b7a9ab1ec1673ced/server.jar"
+server_root = "/opt/minecraft"
+date = datetime.datetime.now().strftime("%Y-%m-%d")
+
+# Get latest version. For comparision with current version.
+# Turns out current version is tricky to get.
+try:
+    r = requests.get(version_url)
+except:
+    sys.exit("Error getting version information.")
+
+data = json.loads(r.content)
+version_latest = data['latest']['release']
+print(f"{version_latest}")
+
+try:
+    r = requests.get(download_url)
+except:
+    sys.exit("Error downloading file.")
+
+try:
+    with open(f'{server_root}/minecraft_server.jar.latest', 'wb') as f:
+        f.write(r.content)
+except:
+    sys.exit("Error writing download to file.")
+
+try:
+    shutil.copytree(f"{server_root}/server/world", f"{server_root}/backups/world-{date}")
+except:
+    sys.exit("Error copying server/world to backups/world-date.")
+
+try:
+    shutil.move(f"{server_root}/minecraft_server.jar", f"{server_root}/backups/minecraft_server.jar-{date}")
+except:
+    sys.exit("Error moving minecraft_server.jar to backups dir.")
+
+try:
+    shutil.move(f"{server_root}/minecraft_server.jar.latest", f"{server_root}/minecraft_server.jar")
+except:
+    sys.exit("Error moving downloaded server file to correct name (minecraft_server.jar)")
+
+print(f"Upgraded Minecraft server to version {version_latest}")
+
+sys.exit()
+
