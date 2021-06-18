@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Author: Jonas Hendrikson (2021) jonas@hendrikson.se
+
+# Enable or disable battery charge threshold of 60%.
+# Tested on lenovo yoga slim 7 with AMD Ryzen 7 4700U with Radeon Graphics
+
+sys_file='/sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode'
+
+usage () {
+	echo "Usage: chargelimit [OPTION] [COMMAND]"
+	echo ""
+	echo "Set battery charge limit on or off."
+	echo "Should work on Yoga and Ideapad AMD Renoir Ryzen platform."
+	echo "Tested on Lenovo Yoga Slim 7 with AMD Ryzen 7 4700U."
+	echo ""
+	echo "Following OPTIONS are available:"
+	echo "  -h, --help  This text"
+	echo ""
+	echo "Following COMMANDS are available:"
+	echo "  status      Shows current setting (on or off)"
+	echo "      on      Limits charging to 60%"
+	echo "     off      Allows full charge."
+}
+
+set_throttle_off () {
+	echo 0 > $sys_file
+}
+
+set_throttle_on () {
+	echo 1 > $sys_file
+}
+
+check_status () {
+	if [[ $(cat $sys_file) == 0 ]]; then
+		printf "Charging threshold is off (will charge to 100%%).\n"
+	elif [[ $(cat $sys_file) == 1 ]]; then
+		printf "Charging threshols is on (will limit charge to 60%%).\n"
+	elif [[ $(cat $sys_file) > 1 ]]; then
+		printf "Unknown state. May be unsupported hardware."
+	fi
+}
+
+if ! [[ -e $sys_file ]]; then
+	echo "$sys_file does not exist. May be unupported hardware."
+	exit 2
+fi
+
+case $1 in
+	-h | --help)
+		usage ;;
+	status)
+		check_status ;;
+	on)
+		set_throttle_on ;;
+	off)
+		set_throttle_off ;;
+	*)
+		usage ;;
+esac
+
+exit 0
