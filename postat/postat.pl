@@ -41,6 +41,7 @@ my $hours=@split_h[0];
 my $minutes=@split_h[1]*60;
 $minutes=substr($minutes, 0, 2);
 chomp $percent;
+chomp $status;
 
-print("Battery: " . $percent . "\%\n" . $status . "Time: " . $hours . ':' . $minutes . "\n");
+print("Battery: " . $percent . "\%\n" . $status . "\n" . "Time: " . $hours . ':' . $minutes . "\n");
 
